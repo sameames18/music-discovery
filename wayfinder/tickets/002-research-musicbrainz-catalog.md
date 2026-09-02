@@ -3,7 +3,7 @@ id: 002
 title: MusicBrainz and Discogs as the Catalog source
 label: wayfinder:research
 status: open
-assignee: none
+assignee: agent
 blocked_by: []
 ---
 

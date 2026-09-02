@@ -26,7 +26,7 @@ The map is done when every decision that spec needs is made and nothing is left 
 
 <!-- one line per closed ticket: [title](tickets/NNN-slug.md): gist -->
 
-(none yet)
+- [Spotify Web API and library export, current state](tickets/003-research-spotify-api.md): Spotify OAuth can't serve a public site (5-user dev cap; extended quota needs a legal entity and 250k MAU). Liked-track/album endpoints work for those 5. ListenBrainz (CC0, MBIDs resolved, parses Spotify's export) is the cheapest universal Import; Spotify's own export zip works as a filtered upload. MusicBrainz ISRC/barcode coverage is partial, match rate unmeasured.
 
 ## Not yet specified
 

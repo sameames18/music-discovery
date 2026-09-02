@@ -3,7 +3,7 @@ id: 004
 title: Where critic reviews can be sourced from, per Publication
 label: wayfinder:research
 status: open
-assignee: none
+assignee: agent
 blocked_by: []
 ---
 

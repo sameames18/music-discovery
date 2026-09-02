@@ -3,7 +3,7 @@ id: 006
 title: Legal and privacy obligations for a public site holding Members' listening data
 label: wayfinder:research
 status: open
-assignee: none
+assignee: agent
 blocked_by: []
 ---
 

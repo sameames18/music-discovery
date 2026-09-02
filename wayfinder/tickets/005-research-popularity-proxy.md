@@ -3,7 +3,7 @@ id: 005
 title: Open-data sources for the Popularity Proxy
 label: wayfinder:research
 status: open
-assignee: none
+assignee: agent
 blocked_by: []
 ---
 
