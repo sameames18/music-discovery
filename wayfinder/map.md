@@ -27,6 +27,7 @@ The map is done when every decision that spec needs is made and nothing is left 
 <!-- one line per closed ticket: [title](tickets/NNN-slug.md): gist -->
 
 - [Spotify Web API and library export, current state](tickets/003-research-spotify-api.md): Spotify OAuth can't serve a public site (5-user dev cap; extended quota needs a legal entity and 250k MAU). Liked-track/album endpoints work for those 5. ListenBrainz (CC0, MBIDs resolved, parses Spotify's export) is the cheapest universal Import; Spotify's own export zip works as a filtered upload. MusicBrainz ISRC/barcode coverage is partial, match rate unmeasured.
+- [Legal and privacy obligations for a public site holding Members' listening data](tickets/006-research-legal-privacy.md): CCPA doesn't apply; CalOPPA privacy policy and CA breach statute do. GDPR only if targeting the EU — avoid third-party analytics (the "monitoring" limb). DMCA agent ($6) + takedown path + repeat-infringer policy required to protect Members' Reviews. AGPL footer from day one. MusicBrainz tags/genres/ratings are CC BY-NC-SA, not CC0 — attribution and share-alike apply, NC bites if money enters. Cover-art thumbnails defensible; store review score + link + pull-quote only.
 
 ## Not yet specified
 
