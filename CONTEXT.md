@@ -5,16 +5,20 @@ An open-source, public, multi-user album catalog where Members track what they'v
 ## Catalog
 
 **Album**:
-The work a listener means when they say "the album": all editions, pressings, and remasters of the same record collapsed into one thing. Ratings, Reviews, Scores, and Tags attach to Albums. Corresponds to a MusicBrainz *release group*.
+The work a listener means when they say "the album": all editions, pressings, and remasters of the same record collapsed into one thing. Ratings, Reviews, Scores, and Tags attach to Albums. Corresponds to a MusicBrainz *release group* of primary type Album or EP; singles and broadcasts are not Albums. Compilations, live albums, soundtracks, and remix albums are Albums, marked as such.
 _Avoid_: release, release group, record, LP
 
 **Edition**:
-One specific issue of an Album (the 1997 CD, the 2015 remaster, the Spotify version). Exists only so Imports can be matched: an external album id points at an Edition, which resolves to its Album. Corresponds to a MusicBrainz *release*.
+One specific official issue of an Album (the 1997 CD, the 2015 remaster, the Spotify version). Carries the track list and the identifiers (barcode, ISRCs) that let Imports resolve to an Album. Bootlegs and promos are not Editions. Every Album has one Canonical Edition whose track list the Album page shows. Corresponds to a MusicBrainz *release*.
 _Avoid_: release, pressing, version
 
+**Canonical Edition**:
+The one Edition of an Album chosen to stand for it: the earliest official issue, and among ties the one with the most Tracks. Deterministic; the Album page shows its track list.
+_Avoid_: main release, default version
+
 **Track**:
-A song as it appears on an Edition. The product reasons about Albums; Tracks exist to resolve Imports (Spotify gives songs, we need Albums).
-_Avoid_: song
+One recorded performance, a single identity across every Edition it appears on (the same Track sits on the 1998 CD and the 2019 remaster), with a position on each Edition's track list. The product reasons about Albums; Tracks resolve Imports (Spotify gives songs, we need Albums) and are what a Track Reaction attaches to. Corresponds to a MusicBrainz *recording*.
+_Avoid_: song, recording
 
 **Artist**:
 The credited primary performer of an Album, as printed on the cover.
@@ -25,7 +29,7 @@ Anyone credited on an Album in any role: performer, producer, featured guest, en
 _Avoid_: credit, contributor, collaborator
 
 **Catalog**:
-The full set of Albums the site knows about, sourced from MusicBrainz. Everything in the Catalog is searchable and rateable.
+The full set of Albums the site knows about, sourced from MusicBrainz and held in our own database. Everything in the Catalog is searchable and rateable. An Album MusicBrainz knows but the Catalog doesn't yet is fetched and added the first time a Member searches or imports it.
 _Avoid_: database, library (that word belongs to Members)
 
 ## Tagging
@@ -151,3 +155,4 @@ Terms whose definitions wait on a decision. The Wayfinder map tickets these.
 - **Genre vocabulary**: whose controlled list Genres come from (MusicBrainz genres, a curated hierarchy of our own, or another).
 - **Mood and content Tags**: deferred past the first build. Where they come from (curation, community tagging, or derived by a model) is undecided.
 - **Critic Review normalisation**: how letter grades, stars, and out-of-10 scores map to one scale.
+- **Track Reaction**: a Member's thumbs-up or thumbs-down on one Track. Neither a Rating (those are Album-level stars) nor a Reaction (those are on Recommendations). Whether it Logs the Album, feeds the Taste Profile, or shows on the Member Page is undecided (Member data model ticket).
