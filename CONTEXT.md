@@ -57,7 +57,7 @@ An aggregate number on an Album computed from many individual verdicts. There ar
 _Avoid_: rating (that's one Member's verdict), grade, metascore
 
 **Critic Score**:
-The aggregate of Critic Reviews for an Album, computed by this site from the Publications it tracks.
+The aggregate of Critic Reviews for an Album, computed by this site from the Publications it tracks as an unweighted mean of their normalised scores. No Publication counts more than another. A single Critic Review is enough for a Critic Score to appear.
 _Avoid_: metascore, AOTY score, critic rating
 
 **Community Score**:
@@ -73,7 +73,7 @@ A named source of Critic Reviews that publishes a numeric score: Pitchfork, The 
 _Avoid_: outlet, source, site, critic (a critic is a person; we track Publications)
 
 **Critic Review**:
-One published review of one Album by one Publication, with its score normalised to a common scale. Held as the score, a link, and the headline; the review's text is never held.
+One published review of one Album by one Publication, with its score normalised to a common 0–100 scale. Held as the score, a link, and the headline; the review's text is never held.
 _Avoid_: article, piece
 
 **Acclaimed**:
@@ -154,5 +154,4 @@ Terms whose definitions wait on a decision. The Wayfinder map tickets these.
 
 - **Genre vocabulary**: whose controlled list Genres come from (MusicBrainz genres, a curated hierarchy of our own, or another).
 - **Mood and content Tags**: deferred past the first build. Where they come from (curation, community tagging, or derived by a model) is undecided.
-- **Critic Review normalisation**: how letter grades, stars, and out-of-10 scores map to one scale.
 - **Track Reaction**: a Member's thumbs-up or thumbs-down on one Track. Neither a Rating (those are Album-level stars) nor a Reaction (those are on Recommendations). Whether it Logs the Album, feeds the Taste Profile, or shows on the Member Page is undecided (Member data model ticket).
