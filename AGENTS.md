@@ -7,10 +7,10 @@ Album catalog and discovery site, pre-code. The work right now is a Wayfinder ma
 Read, in order, every session:
 
 1. `CONTEXT.md` — the glossary. Use its terms; when a ticket sharpens a term, edit it there (skill: `domain-modeling`).
-2. `wayfinder/map.md` — destination, standing decisions (**Notes**), what's settled (**Decisions so far**), fog, out of scope. Standing decisions are closed: bring facts against one only if new research contradicts it.
-3. `wayfinder/TRACKER.md` — how tickets, claiming, blocking, and closing work in this repo. Ticket 001 moves the tracker to GitHub Issues; once that ticket is closed, TRACKER.md describes the new mechanics.
+2. The map, GitHub issue #20 (`gh issue view 20`; `wayfinder/map.md` is only a pointer) — destination, standing decisions (**Notes**), what's settled (**Decisions so far**), fog, out of scope. Standing decisions are closed: bring facts against one only if new research contradicts it.
+3. `wayfinder/TRACKER.md` — how tickets, claiming, blocking, and closing work on GitHub Issues.
 
-Findings from closed research tickets live in `docs/research/`; the ticket's Resolution section is the gist, the file is the detail.
+Findings from closed research tickets live in `docs/research/`; the ticket's resolution comment is the gist, the file is the detail.
 
 ## Work
 
