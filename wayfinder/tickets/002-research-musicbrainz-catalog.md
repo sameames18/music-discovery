@@ -34,4 +34,9 @@ Key facts:
 - **Cover Art Archive**: no rate limit; `/release-group/{mbid}/front-250|500|1200` gives Album art directly; ~3.1M release groups have art; images carry no licence ("use at your own risk").
 - **Discogs**: API 60/min authenticated; content may not be displayed if >6 h old nor cached beyond necessity; have/want/rating counts are *Restricted* (no storage, no commercial use) — dead as a stored Popularity Proxy. Monthly XML dumps are CC0 (releases 10.5 GB gz, masters 597 MB) and add credit breadth plus an editorial genre/style taxonomy.
 
-Unverified: per-type genre-tag coverage and rated-Album count; dump import time; whether JSON dumps carry genres; VPS pricing for the 100 GB / 4 GB mirror (left to 017).
+Computed after the doc was committed (from `mbdump-derived` 2026-08-29; not in the findings file):
+- Albums with ≥1 positive tag of any kind: 1,151,738 of 4,486,409 (**25.7%**); with ≥3 tags: 496,460 (11%).
+- Albums with a MusicBrainz rating: 253,421 (**5.6%**), of which 212,726 have exactly one vote and only 5,612 have 5+ votes — MusicBrainz ratings are near-useless as a Popularity Proxy.
+- Albums with a first-release year: 4,286,545 (95.5%) — the decade Axis is nearly complete.
+
+Unverified: the *genre-specific* share of tagged Albums (needs the `tag` id→name join; method in §3.2); dump import time; whether JSON dumps carry genres; VPS pricing for the 100 GB / 4 GB mirror (left to 017).
