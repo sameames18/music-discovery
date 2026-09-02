@@ -69,11 +69,11 @@ An open-data stand-in (listener counts, collection counts, third-party ratings) 
 _Avoid_: fallback score, external rating
 
 **Publication**:
-A named source of Critic Reviews: Pitchfork, The Guardian, The Quietus.
+A named source of Critic Reviews that publishes a numeric score: Pitchfork, The Guardian, Mojo. A source that reviews without scoring (The Quietus, Stereogum) is not a Publication here; the site does not assign scores to prose.
 _Avoid_: outlet, source, site, critic (a critic is a person; we track Publications)
 
 **Critic Review**:
-One published review of one Album by one Publication, with its score normalised to a common scale.
+One published review of one Album by one Publication, with its score normalised to a common scale. Held as the score, a link, and the headline; the review's text is never held.
 _Avoid_: article, piece
 
 **Acclaimed**:
