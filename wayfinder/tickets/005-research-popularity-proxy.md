@@ -2,7 +2,7 @@
 id: 005
 title: Open-data sources for the Popularity Proxy
 label: wayfinder:research
-status: open
+status: closed
 assignee: agent
 blocked_by: []
 ---
@@ -19,4 +19,14 @@ Deliver: a source table and a note on which combination gives the widest coverag
 
 ## Resolution
 
-(open)
+Resolved 2026-09-01. Findings: [docs/research/005-popularity-proxy.md](../../docs/research/005-popularity-proxy.md) (branch `research/popularity-proxy`, merged). Every terms clause is quoted verbatim with URLs.
+
+Usable, all keyed on the Album's own MBID, no account needed, storage and display allowed:
+- **ListenBrainz `POST /1/popularity/release-group`** — primary. Tested live, unauthenticated, 1,000 MBIDs per call, returns `total_listen_count` / `total_user_count` (e.g. OK Computer 1.55M listens / 21.6k listeners); nulls for unknowns. Listens dumps are CC0. Rate limit observed ~30 per ~6 s window.
+- **MusicBrainz ratings** — secondary and thin: 5.6% of Albums rated, only 5,612 with 5+ votes; lives in the CC BY-NC-SA derived dump, so any proxy built from it inherits share-alike / non-commercial.
+- **Wikipedia pageviews** (via Wikidata P436 → enwiki article) — attention signal, CC0, 148,523 Albums covered, 200 req/min policy.
+- **Wikidata quality flags** — review scores (P444) on 4,056 Albums, awards/nominations (P166/P1411) on 2,337, CC0. Year-end lists are not structured anywhere open. Wikipedia's `{{Album ratings}}` template is a cited per-Publication score table — a finding aid for tickets 004/008, not a Signal.
+
+Excluded on terms: **Spotify** (no storing/aggregating Spotify Content; no integrating with other services' content), **Deezer** (non-commercial private use only), **Last.fm** (non-commercial, 100 MB storage cap, mandatory button, pages need Last.fm's written approval), **Discogs** (content older than 6 h may not be displayed; have/want is Edition-level; the stats endpoint now returns nothing useful).
+
+Unverified: provenance/licence of ListenBrainz's popularity numbers (a related dataset page says MLHD+, which is non-commercial; the API docs don't say — ask MetaBrainz, or derive from the CC0 listens dump instead); exact ListenBrainz rate-limit window; whether Discogs have/want counts appear in its CC0 dumps.
