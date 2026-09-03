@@ -49,7 +49,7 @@ _Avoid_: style, style tag
 ## Scoring
 
 **Signal**:
-Any input the Engine may use about an Album or a Taste Profile: Critic Score, Community Score, Popularity Proxy, Tags, and later Influence. Signals are pluggable; adding one must not require redesigning the Engine.
+Any input the Engine may use about an Album or a Taste Profile: Critic Score, Community Score, Tags, and later Influence. Signals are pluggable; adding one must not require redesigning the Engine.
 _Avoid_: feature, factor, input, weight
 
 **Score**:
@@ -61,12 +61,8 @@ The aggregate of Critic Reviews for an Album, computed by this site from the Pub
 _Avoid_: metascore, AOTY score, critic rating
 
 **Community Score**:
-The aggregate of Members' Ratings of an Album.
+The aggregate of Members' Ratings of an Album: an unweighted mean, shown regardless of how many Ratings exist. Deliberately independent of popularity — how many people have heard an Album never influences how good Members say it is; those are different axes and this site never blends them into one number.
 _Avoid_: user score, RYM score, average rating, audience score
-
-**Popularity Proxy**:
-An open-data stand-in (listener counts, collection counts, third-party ratings) used in place of Community Score while an Album has too few native Ratings. Always weaker than a real Community Score.
-_Avoid_: fallback score, external rating
 
 **Publication**:
 A named source of Critic Reviews that publishes a numeric score: Pitchfork, The Guardian, Mojo. A source that reviews without scoring (The Quietus, Stereogum) is not a Publication here; the site does not assign scores to prose.
@@ -155,3 +151,4 @@ Terms whose definitions wait on a decision. The Wayfinder map tickets these.
 - **Genre vocabulary**: whose controlled list Genres come from (MusicBrainz genres, a curated hierarchy of our own, or another).
 - **Mood and content Tags**: deferred past the first build. Where they come from (curation, community tagging, or derived by a model) is undecided.
 - **Track Reaction**: a Member's thumbs-up or thumbs-down on one Track. Neither a Rating (those are Album-level stars) nor a Reaction (those are on Recommendations). Whether it Logs the Album, feeds the Taste Profile, or shows on the Member Page is undecided (Member data model ticket).
+- **Popularity**: a possible future indicator of how widely an Album is heard, deliberately separate from Community Score — never blended into it, never a substitute for it, never a factor in Acclaimed status. Dropped from v1: no source cleared both terms and budget (RIAA certifications are US-only and tier-based, not continuous; ListenBrainz listener counts are usable but weren't enough on their own; Spotify, Deezer, Last.fm, YouTube, kworb, and Billboard are all ruled out on terms; Chartmetric and Soundcharts are priced well over the site's budget). Revisit only if a new clean source appears or the budget changes.
