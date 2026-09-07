@@ -93,6 +93,7 @@
   .artist { color: var(--text-dim); }
   .score { color: var(--accent); font-variant-numeric: tabular-nums; width: 60px; }
   .reason { color: var(--text-dim); font-size: 12.5px; }
+  .reason b { color: var(--accent); font-weight: 600; }
   .empty { color: var(--text-dim); font-style: italic; padding: 20px 0; }
 
   .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -117,8 +118,49 @@
   .profile-tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .profile-tag { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
   .profile-tag b { color: var(--accent); }
+  .profile-tag.minor { opacity: 0.55; }
+  .profile-more { background: none; border: 1px dashed var(--border); color: var(--text-dim); border-radius: 999px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
 
   .caveat { font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+
+  .heard-btn {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .heard-btn:hover { color: var(--text); border-color: var(--accent); }
+  .heard-prompt { display: flex; gap: 6px; }
+  .like-btn, .dislike-btn {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .like-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .dislike-btn:hover { border-color: #f87171; color: #f87171; }
+
+  .heard-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+  .heard-empty { color: var(--text-dim); font-style: italic; }
+  .heard-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .heard-chip { border-radius: 999px; padding: 5px 12px; font-size: 12px; border: 1px solid var(--border); }
+  .heard-chip.liked { border-color: var(--accent); color: var(--accent); }
+  .heard-chip.disliked { border-color: #f87171; color: #f87171; }
+  .reset-heard-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -151,20 +193,37 @@
         <span class="dot"></span> Weight tags by rarity
       </div>
       <div class="toggle on" id="toggle-exclude" onclick="onToggleExclude()">
-        <span class="dot"></span> Exclude same-artist Candidates
+        <span class="dot"></span> Exclude Favourite artists
+      </div>
+      <div class="toggle" id="toggle-diversity" onclick="onToggleDiversity()">
+        <span class="dot"></span> One album per artist in results
+      </div>
+      <div class="toggle on" id="toggle-genre" onclick="onToggleGenreBoost()">
+        <span class="dot"></span> Boost genre tags (2.5x)
       </div>
       <div class="mode-group">
         <button class="mode-btn" id="mode-tight" onclick="onSetMode('tight')">Tight match</button>
         <button class="mode-btn active" id="mode-adjacent" onclick="onSetMode('adjacent')">Adjacent match</button>
       </div>
     </div>
+    <p class="caveat">
+      "Exclude Favourite artists" only excludes artists from your 9 Favourites (Westside Gunn, etc.) &mdash; it
+      does nothing about a Candidate artist appearing more than once <em>within</em> the results (e.g. two Pink Floyd
+      albums, neither a Favourite). "One album per artist in results" is the separate toggle for that.
+    </p>
+    <p class="caveat">
+      "Boost genre tags" multiplies a tag's weight 2.5x if it's genre-shaped ("gangsta rap", "art rock") rather than a
+      mood/theme/trivia tag ("existential", "car on cover") &mdash; a hand-written keyword guess standing in for a
+      real Tag taxonomy (ticket 014). Genre tags are <b>bolded</b> in the Reason column below; the rest are plain.
+      Other-tags still count, just at 1x.
+    </p>
     <p class="changed-note" id="changed-note"></p>
   </section>
 
   <section>
     <h2>Top 10 Recommendations</h2>
     <table>
-      <thead><tr><th></th><th>Album</th><th>Artist</th><th>Year</th><th>Score</th><th>Reason</th></tr></thead>
+      <thead><tr><th></th><th>Album</th><th>Artist</th><th>Year</th><th>Score</th><th>Reason</th><th>Feedback</th></tr></thead>
       <tbody id="results-body"></tbody>
     </table>
     <p class="caveat">
@@ -172,6 +231,19 @@
       Catalog/Critic ingestion pipeline (tickets 007&ndash;009) isn't built yet, only designed. Whether a real Reason should
       also cite Critic Score is worth reacting to even without seeing it live here.
     </p>
+  </section>
+
+  <section>
+    <h2>Heard this session</h2>
+    <div class="heard-panel">
+      <div class="heard-list" id="heard-list"></div>
+      <p class="caveat" style="margin:0 0 10px">
+        Marking a Candidate "Already heard it" removes it from future results (a Recommendation is never something
+        already in your Library) and, if you say Liked/Didn't like, tunes the Taste Profile for everything scored
+        after &mdash; a stand-in for what a real Rating would do once this Engine has a live Library to read from.
+      </p>
+      <button class="reset-heard-btn" onclick="resetHeard()">Reset heard albums</button>
+    </div>
   </section>
 
   <section>
@@ -191,15 +263,50 @@
 // to be lifted into the real Engine (ticket 012) once validated.
 // ============================================================
 const Engine = (() => {
-  function buildTasteProfile(favourites) {
+  // Heuristic genre/subgenre detector for a flat, unstructured MusicBrainz
+  // tag list (no real taxonomy exists yet — see ticket 002). Substring match
+  // against known genre-family words; anything left over (mood, theme,
+  // production, trivia tags like "existential" or "car on cover") is
+  // treated as a non-genre "other" tag. Approximate by design — a stand-in
+  // for the real Tag model ticket 014 will define.
+  const GENRE_MARKERS = [
+    "hip hop", "hip-hop", "rap", "rock", "pop", "soul", "jazz", "punk", "metal",
+    "electronic", "folk", "blues", "disco", "house", "techno", "funk", "r&b",
+    "wave", "core", "step", "grunge", "dance", "country", "reggae", "ambient",
+    "experimental", "industrial", "ska", "gospel", "classical", "opera",
+    "synth", "drone", "noise", "boom bap", "trap", "grime", "dub",
+  ];
+  const GENRE_MULTIPLIER = 2.5;
+  function isGenreTag(tag) {
+    const t = tag.toLowerCase();
+    return GENRE_MARKERS.some((marker) => t.includes(marker));
+  }
+
+  // favourites and likedExtras both contribute positive weight to the
+  // profile; likedExtras are Candidates the Member marked "already heard,
+  // liked" this session, standing in for what a real Rating would do.
+  function buildTasteProfile(favourites, likedExtras = []) {
     const tagToFavourites = new Map();
-    for (const fav of favourites) {
+    for (const fav of [...favourites, ...likedExtras]) {
       for (const tag of fav.tags) {
         if (!tagToFavourites.has(tag)) tagToFavourites.set(tag, new Set());
         tagToFavourites.get(tag).add(fav.title);
       }
     }
     return tagToFavourites;
+  }
+
+  // dislikedExtras subtract: a Candidate sharing tags with something the
+  // Member marked "didn't like" gets pushed down, not just left unboosted.
+  function buildDislikeMap(dislikedExtras = []) {
+    const tagToDislikes = new Map();
+    for (const album of dislikedExtras) {
+      for (const tag of album.tags) {
+        if (!tagToDislikes.has(tag)) tagToDislikes.set(tag, new Set());
+        tagToDislikes.get(tag).add(album.title);
+      }
+    }
+    return tagToDislikes;
   }
 
   function poolFrequency(candidates) {
@@ -210,9 +317,10 @@ const Engine = (() => {
     return freq;
   }
 
-  function scoreCandidate(candidate, profile, poolFreq, poolSize, options) {
+  function scoreCandidate(candidate, profile, dislikeMap, poolFreq, poolSize, options) {
     let score = 0;
     const shared = [];
+    const penalized = [];
     for (const tag of candidate.tags) {
       const favSet = profile.get(tag);
       if (!favSet) continue;
@@ -223,43 +331,77 @@ const Engine = (() => {
         const idf = Math.log((poolSize + 1) / df) + 1;
         weight = importance * idf;
       }
-      shared.push({ tag, weight, fromFavourites: [...favSet] });
+      const genre = isGenreTag(tag);
+      if (options.boostGenreTags && genre) weight *= GENRE_MULTIPLIER;
+      shared.push({ tag, weight, fromFavourites: [...favSet], genre });
       score += weight;
+    }
+    for (const tag of candidate.tags) {
+      const dislikeSet = dislikeMap.get(tag);
+      if (!dislikeSet) continue;
+      // Same weight formula as a positive match, so one disliked Album
+      // roughly cancels one Favourite's worth of enthusiasm on that tag.
+      let weight = dislikeSet.size;
+      if (options.weightByRarity) {
+        const df = poolFreq.get(tag) || 1;
+        const idf = Math.log((poolSize + 1) / df) + 1;
+        weight = dislikeSet.size * idf;
+      }
+      const genre = isGenreTag(tag);
+      if (options.boostGenreTags && genre) weight *= GENRE_MULTIPLIER;
+      penalized.push({ tag, weight, fromDisliked: [...dislikeSet], genre });
+      score -= weight;
     }
     if (options.matchMode === "tight") {
       if (shared.length < 2) score = 0;
       else score *= 1 + (shared.length - 1) * 0.15;
     }
     shared.sort((a, b) => b.weight - a.weight);
-    return { score, shared };
+    penalized.sort((a, b) => b.weight - a.weight);
+    return { score, shared, penalized };
   }
 
   function rankCandidates(favourites, candidates, options, topN = 10) {
-    const profile = buildTasteProfile(favourites);
+    const liked = options.liked || [];
+    const disliked = options.disliked || [];
+    const heardIds = new Set([...liked, ...disliked].map((a) => a.mbid));
+
+    const profile = buildTasteProfile(favourites, liked);
+    const dislikeMap = buildDislikeMap(disliked);
     const poolFreq = poolFrequency(candidates);
     const favArtists = new Set(favourites.map((f) => f.artist));
-    let pool = candidates;
+
+    let pool = candidates.filter((c) => !heardIds.has(c.mbid));
     if (options.excludeSameArtist) {
       pool = pool.filter((c) => !favArtists.has(c.artist));
     }
-    const scored = pool
-      .map((c) => ({ candidate: c, ...scoreCandidate(c, profile, poolFreq, candidates.length, options) }))
+
+    let scored = pool
+      .map((c) => ({ candidate: c, ...scoreCandidate(c, profile, dislikeMap, poolFreq, candidates.length, options) }))
       .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topN);
-    return { profile, results: scored };
+      .sort((a, b) => b.score - a.score);
+
+    if (options.oneAlbumPerArtist) {
+      const seenArtists = new Set();
+      scored = scored.filter((r) => {
+        if (seenArtists.has(r.candidate.artist)) return false;
+        seenArtists.add(r.candidate.artist);
+        return true;
+      });
+    }
+
+    return { profile, results: scored.slice(0, topN) };
   }
 
   function formatReason(shared) {
     const top = shared.slice(0, 3);
-    const tagList = top.map((s) => s.tag).join(", ");
     const favSet = new Set();
     top.forEach((s) => s.fromFavourites.forEach((f) => favSet.add(f)));
     const favList = [...favSet].slice(0, 3).join(", ");
-    return `Shares ${tagList} with ${favList}`;
+    return { top, favList };
   }
 
-  return { buildTasteProfile, poolFrequency, scoreCandidate, rankCandidates, formatReason };
+  return { buildTasteProfile, buildDislikeMap, poolFrequency, scoreCandidate, rankCandidates, formatReason, isGenreTag };
 })();
 
 // ============================================================
@@ -270,164 +412,113 @@ const Engine = (() => {
 const DATA = {
   "favourites": [
     {
-      "mbid": "ba8e4496-b9b7-4520-9208-6afb85f7e214",
-      "title": "Reasonable Drought",
-      "artist": "Stove God Cooks",
-      "year": "2020",
+      "mbid": "e7995d4d-e79f-47a2-b319-58790e2508ce",
+      "title": "2 Alivë",
+      "artist": "Yeat",
+      "year": "2022",
       "tags": [
+        "plugg",
+        "pop rap",
+        "rage",
+        "trap",
+        "english",
+        "laut.de",
+        "pop/rock/indie/electronic"
+      ]
+    },
+    {
+      "mbid": "037f0f7e-817f-464a-99f5-f82c030e3124",
+      "title": "Never Been Ordinary",
+      "artist": "French The Kid",
+      "year": "2022",
+      "tags": [
+        "uk drill"
+      ]
+    },
+    {
+      "mbid": "fbb2d6a8-41eb-477c-a0f4-7c5079baf6fb",
+      "title": "THE FUNK WILL PREVAIL",
+      "artist": "Kaelin Ellis",
+      "year": "2022",
+      "tags": [
+        "dance",
+        "electronic",
         "hip hop"
       ]
     },
     {
-      "mbid": "88ff5382-b88b-4e83-baaa-61a3258a2305",
-      "title": "CARE FOR ME",
-      "artist": "Saba",
+      "mbid": "d6cfccc8-026d-4028-b567-4f762354ff91",
+      "title": "Multitude",
+      "artist": "Stromae",
+      "year": "2022",
+      "tags": [
+        "afrobeats",
+        "art pop",
+        "dance-pop",
+        "digital cumbia",
+        "hip hop",
+        "latin pop",
+        "5+ wochen",
+        "french caribbean music",
+        "french hip hop",
+        "french pop",
+        "ph_2_stars"
+      ]
+    },
+    {
+      "mbid": "03f3c216-bd40-322b-ac8a-254816ff5573",
+      "title": "The Infamous…",
+      "artist": "Mobb Deep",
+      "year": "1995",
+      "tags": [
+        "hip hop",
+        "gangsta rap",
+        "boom bap",
+        "east coast hip hop",
+        "hardcore hip hop",
+        "jazz rap",
+        "east coast rap",
+        "hardcore rap",
+        "hip-hop/rap",
+        "usa"
+      ]
+    },
+    {
+      "mbid": "eabce250-e038-4db5-b137-d14d80a26e36",
+      "title": "Supreme Blientele",
+      "artist": "Westside Gunn",
       "year": "2018",
       "tags": [
-        "alternative r&b",
-        "conscious hip hop",
-        "hip hop",
-        "cloud rap",
-        "contemporary r&b",
-        "jazz rap",
-        "lo-fi hip hop",
-        "neo soul"
+        "hip hop"
       ]
     },
     {
-      "mbid": "c50b180a-12c9-3153-8ba5-eac6a6537d6f",
-      "title": "X&Y",
-      "artist": "Coldplay",
-      "year": "2005",
-      "tags": [
-        "pop rock",
-        "alternative rock",
-        "rock",
-        "post-britpop",
-        "piano rock",
-        "alternative punk",
-        "art rock",
-        "indie rock",
-        "alternative and punk",
-        "brit pop",
-        "pop/rock",
-        "unclassifiable",
-        "acoustic",
-        "alternative rock / pop",
-        "big music",
-        "rock and indie"
-      ]
-    },
-    {
-      "mbid": "51dc2ac9-4580-46aa-99cf-37abd5c93fc0",
-      "title": "Please Excuse Me for Being Antisocial",
-      "artist": "Roddy Ricch",
-      "year": "2019",
+      "mbid": "2790d47d-b8ba-446c-8cc8-57bc4f46646c",
+      "title": "2 P’z in a Pod",
+      "artist": "Jay Worthy, Larry June, LNDN DRGS",
+      "year": "2022",
       "tags": [
         "hip hop"
       ]
     },
     {
-      "mbid": "c78006f8-20b0-4f6d-bfa3-b0a368dfe198",
-      "title": "Off the Wall",
-      "artist": "Michael Jackson",
-      "year": "1980",
+      "mbid": "eb7c1504-7f86-4f12-90e1-0aa0a827ba0e",
+      "title": "Parrhesia",
+      "artist": "Animals as Leaders",
+      "year": "2022",
       "tags": [
-        "disco",
-        "pop"
+        "progressive metal",
+        "rock"
       ]
     },
     {
-      "mbid": "13615d5f-c913-4f48-afc7-6f56c8313fd5",
-      "title": "Alfredo",
-      "artist": "Freddie Gibbs, The Alchemist",
-      "year": "2020",
+      "mbid": "1fd7d2b0-1b17-46d3-9f80-c38cbdc00458",
+      "title": "Between Days",
+      "artist": "Kiefer",
+      "year": "2021",
       "tags": [
-        "hip hop",
-        "boom bap",
-        "gangsta rap",
-        "jazz rap",
-        "mafioso rap",
-        "drumless"
-      ]
-    },
-    {
-      "mbid": "6e335887-60ba-38f0-95af-fae7774336bf",
-      "title": "In Rainbows",
-      "artist": "Radiohead",
-      "year": "2007",
-      "tags": [
-        "alternative rock",
-        "rock",
-        "art rock",
         "electronic",
-        "indie rock",
-        "alternative pop",
-        "art pop",
-        "dream pop",
-        "experimental",
-        "experimental rock",
-        "krautrock",
-        "progressive",
-        "space rock",
-        "pop",
-        "pop rock",
-        "post-rock",
-        "psychedelic",
-        "alt rock",
-        "alternative/indie rock",
-        "autumn",
-        "death",
-        "eclectic",
-        "existential",
-        "hypnotic",
-        "lush",
-        "melodic",
-        "passionate",
-        "rhythmic",
-        "uk",
-        "uncommon time signatures",
-        "2007",
-        "2007-10-22",
-        "alternative pop/rock",
-        "britannique",
-        "british",
-        "discogs/the most popular album released every year from 1950 to 2020",
-        "english",
-        "i own this",
-        "independent",
-        "mp3",
-        "owned",
-        "pop/rock",
-        "rock and indie",
-        "vyrzukhisuc-album"
-      ]
-    },
-    {
-      "mbid": "3a7cb4ec-575e-3614-b71d-1248c2e470cf",
-      "title": "In My Lifetime, Vol. 1",
-      "artist": "Jay‐Z",
-      "year": "1997",
-      "tags": [
-        "hip hop",
-        "hip hop rap"
-      ]
-    },
-    {
-      "mbid": "77079331-68af-3063-92f9-0b394cea28e1",
-      "title": "Beat Konducta, Volume 1 & 2: Movie Scenes",
-      "artist": "Madlib",
-      "year": "2006",
-      "tags": [
-        "instrumental",
-        "breaks",
-        "hip hop",
-        "instrumental hip hop",
-        "jazz",
-        "psychedelic",
-        "soul",
-        "cut-up dj",
-        "funk soul"
+        "jazz"
       ]
     }
   ],
@@ -3101,18 +3192,30 @@ const DATA = {
 // ============================================================
 // PAGE SHELL — thin, calls into Engine, re-renders on every change.
 // ============================================================
-let state = { weightByRarity: false, excludeSameArtist: true, matchMode: "adjacent" };
+let state = {
+  weightByRarity: false,
+  excludeSameArtist: true,
+  oneAlbumPerArtist: false,
+  boostGenreTags: true,
+  matchMode: "adjacent",
+  liked: [],
+  disliked: [],
+};
+let pendingHeardId = null; // mbid currently showing the Liked/Didn't like prompt
+let profileExpanded = false;
 
 function render() {
   document.getElementById("toggle-rarity").classList.toggle("on", state.weightByRarity);
   document.getElementById("toggle-exclude").classList.toggle("on", state.excludeSameArtist);
+  document.getElementById("toggle-diversity").classList.toggle("on", state.oneAlbumPerArtist);
+  document.getElementById("toggle-genre").classList.toggle("on", state.boostGenreTags);
   document.getElementById("mode-tight").classList.toggle("active", state.matchMode === "tight");
   document.getElementById("mode-adjacent").classList.toggle("active", state.matchMode === "adjacent");
 
   const { results } = Engine.rankCandidates(DATA.favourites, DATA.candidates, state, 10);
   const body = document.getElementById("results-body");
   if (results.length === 0) {
-    body.innerHTML = `<tr><td colspan="6" class="empty">No Candidates scored above zero with these settings.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="empty">No Candidates scored above zero with these settings.</td></tr>`;
   } else {
     body.innerHTML = results
       .map(
@@ -3122,8 +3225,75 @@ function render() {
           <td class="artist">${escapeHtml(r.candidate.artist)}</td>
           <td class="artist">${r.candidate.year || "—"}</td>
           <td class="score">${r.score.toFixed(2)}</td>
-          <td class="reason">${escapeHtml(Engine.formatReason(r.shared))}</td>
+          <td class="reason">${renderReason(r.shared)}</td>
+          <td>${renderFeedbackCell(r.candidate)}</td>
         </tr>`
+      )
+      .join("");
+  }
+  renderHeardPanel();
+  renderProfileTags();
+}
+
+function renderReason(shared) {
+  const { top, favList } = Engine.formatReason(shared);
+  const tagList = top
+    .map((s) => (s.genre ? `<b>${escapeHtml(s.tag)}</b>` : escapeHtml(s.tag)))
+    .join(", ");
+  return `Shares ${tagList} with ${escapeHtml(favList)}`;
+}
+
+function renderFeedbackCell(candidate) {
+  if (pendingHeardId === candidate.mbid) {
+    return `<div class="heard-prompt">
+      <button class="like-btn" onclick="markHeard('${candidate.mbid}', true)">Liked it</button>
+      <button class="dislike-btn" onclick="markHeard('${candidate.mbid}', false)">Didn't like it</button>
+    </div>`;
+  }
+  return `<button class="heard-btn" onclick="promptHeard('${candidate.mbid}')">Already heard it</button>`;
+}
+
+function findCandidate(mbid) {
+  return DATA.candidates.find((c) => c.mbid === mbid);
+}
+
+function promptHeard(mbid) {
+  pendingHeardId = mbid;
+  render();
+}
+
+function markHeard(mbid, liked) {
+  const candidate = findCandidate(mbid);
+  pendingHeardId = null;
+  if (!candidate) return;
+  if (liked) {
+    state.liked = [...state.liked, candidate];
+    flash(`Marked "${candidate.title}" as heard and liked — its tags now feed the Taste Profile.`);
+  } else {
+    state.disliked = [...state.disliked, candidate];
+    flash(`Marked "${candidate.title}" as heard, didn't like — its tags now count against similar Candidates.`);
+  }
+  render();
+}
+
+function resetHeard() {
+  state.liked = [];
+  state.disliked = [];
+  pendingHeardId = null;
+  flash("Cleared this session's heard albums.");
+  render();
+}
+
+function renderHeardPanel() {
+  const all = [...state.liked.map((a) => ({ a, liked: true })), ...state.disliked.map((a) => ({ a, liked: false }))];
+  const list = document.getElementById("heard-list");
+  if (all.length === 0) {
+    list.innerHTML = `<span class="heard-empty">Nothing marked yet — click "Already heard it" on a result above.</span>`;
+  } else {
+    list.innerHTML = all
+      .map(
+        ({ a, liked }) =>
+          `<span class="heard-chip ${liked ? "liked" : "disliked"}">${escapeHtml(a.title)} — ${liked ? "liked" : "didn't like"}</span>`
       )
       .join("");
   }
@@ -3140,11 +3310,28 @@ function renderStatic() {
     )
     .join("");
 
-  const profile = Engine.buildTasteProfile(DATA.favourites);
+  renderProfileTags();
+}
+
+function renderProfileTags() {
+  const profile = Engine.buildTasteProfile(DATA.favourites, state.liked);
   const sorted = [...profile.entries()].sort((a, b) => b[1].size - a[1].size);
-  document.getElementById("profile-tags").innerHTML = sorted
-    .map(([tag, favs]) => `<span class="profile-tag">${escapeHtml(tag)} <b>${favs.size}</b></span>`)
+  const major = sorted.filter(([, favs]) => favs.size >= 2);
+  const minor = sorted.filter(([, favs]) => favs.size < 2);
+  const shown = profileExpanded ? sorted : major;
+  const chips = shown
+    .map(([tag, favs]) => `<span class="profile-tag ${favs.size < 2 ? "minor" : ""}">${escapeHtml(tag)} <b>${favs.size}</b></span>`)
     .join("");
+  const toggle =
+    minor.length > 0
+      ? `<button class="profile-more" onclick="toggleProfileExpanded()">${profileExpanded ? "Show only shared tags" : `+${minor.length} tags shared by just one Favourite`}</button>`
+      : "";
+  document.getElementById("profile-tags").innerHTML = chips + toggle;
+}
+
+function toggleProfileExpanded() {
+  profileExpanded = !profileExpanded;
+  renderProfileTags();
 }
 
 function escapeHtml(s) {
@@ -3163,7 +3350,17 @@ function onToggleRarity() {
 }
 function onToggleExclude() {
   state.excludeSameArtist = !state.excludeSameArtist;
-  flash(state.excludeSameArtist ? "Same-artist Candidates excluded." : "Same-artist Candidates included — watch for repeats of your Favourites' artists.");
+  flash(state.excludeSameArtist ? "Favourite artists excluded from Candidates." : "Favourite artists included — watch for repeats of Westside Gunn/etc.");
+  render();
+}
+function onToggleDiversity() {
+  state.oneAlbumPerArtist = !state.oneAlbumPerArtist;
+  flash(state.oneAlbumPerArtist ? "One album per artist ON — no artist appears twice in the results, Favourite or not." : "One album per artist OFF — the same artist (e.g. Pink Floyd) can fill multiple slots.");
+  render();
+}
+function onToggleGenreBoost() {
+  state.boostGenreTags = !state.boostGenreTags;
+  flash(state.boostGenreTags ? "Genre tags weighted 2.5x — mood/theme tags still count, just at 1x." : "Genre boost OFF — every shared tag (genre or not) weighted equally.");
   render();
 }
 function onSetMode(mode) {
@@ -3179,24 +3376,35 @@ const walkthroughs = [
   {
     id: "baseline",
     label: "Baseline",
-    desc: "Starting point: rarity weighting off, same-artist Candidates excluded, adjacent match. This is the plainest possible version of the Engine — just \"how many tags do you share.\"",
-    steps: [{ label: "Reset to baseline", action: () => setState({ weightByRarity: false, excludeSameArtist: true, matchMode: "adjacent" }) }],
+    desc: "Starting point: rarity weighting off, genre tags boosted 2.5x, same-artist Candidates excluded, adjacent match.",
+    steps: [{ label: "Reset to baseline", action: () => resetToBaseline() }],
   },
   {
     id: "rarity",
     label: "Rarity weighting",
-    desc: "Does a shared 'hip hop' tag (common — most of your pool has it) count the same as a shared rarer tag? Turn rarity weighting on and watch whether the list reorders toward more specific matches.",
+    desc: "With genre boost OFF (so this isolates rarity alone): does a shared 'hip hop' tag (common — most of your pool has it) count the same as a rarer mood tag like 'existential'? Turning rarity ON without genre boosting is what made the list feel 'more rock-y' — it can't tell genre signal from mood-word noise.",
     steps: [
-      { label: "1. Reset to baseline", action: () => setState({ weightByRarity: false, excludeSameArtist: true, matchMode: "adjacent" }) },
-      { label: "2. Turn rarity weighting ON", action: () => setState({ weightByRarity: true }) },
+      { label: "1. Reset to baseline", action: () => resetToBaseline() },
+      { label: "2. Turn genre boost OFF", action: () => setState({ boostGenreTags: false }) },
+      { label: "3. Turn rarity weighting ON", action: () => setState({ weightByRarity: true }) },
+    ],
+  },
+  {
+    id: "genre-boost",
+    label: "Genre boost, live",
+    desc: "Toggle genre boost off and back on and watch the list reorder — genre tags (bolded in Reason) are worth 2.5x when it's on, but a verbosely-tagged candidate can still win on raw count of other-tags alone. Watch whether albums matching your rage/plugg, drill, or progressive-metal Favourites move up or stay buried under generic hip-hop volume.",
+    steps: [
+      { label: "1. Reset to baseline (genre boost ON)", action: () => resetToBaseline() },
+      { label: "2. Turn genre boost OFF — note the top 5", action: () => setState({ boostGenreTags: false }) },
+      { label: "3. Turn genre boost back ON — compare", action: () => setState({ boostGenreTags: true }) },
     ],
   },
   {
     id: "same-artist",
     label: "Same-artist Candidates",
-    desc: "Two of your Favourites are Freddie Gibbs and JAY-Z, and your Candidate pool has other albums by both. With exclusion off, do those flood the top and crowd out discovery?",
+    desc: "One of your Favourites is Westside Gunn, and your Candidate pool has another album of his (FLYGOD). With exclusion off, does it flood the top and crowd out discovery?",
     steps: [
-      { label: "1. Reset to baseline", action: () => setState({ weightByRarity: false, excludeSameArtist: true, matchMode: "adjacent" }) },
+      { label: "1. Reset to baseline", action: () => resetToBaseline() },
       { label: "2. Include same-artist Candidates", action: () => setState({ excludeSameArtist: false }) },
     ],
   },
@@ -3205,11 +3413,46 @@ const walkthroughs = [
     label: "Tight vs. adjacent",
     desc: "Tight match requires 2+ shared tags and rewards concentration; adjacent lets one strong shared tag be enough. Which list feels more like \"more of this\" vs. \"stretch a little\"?",
     steps: [
-      { label: "1. Reset to baseline (adjacent)", action: () => setState({ weightByRarity: false, excludeSameArtist: true, matchMode: "adjacent" }) },
+      { label: "1. Reset to baseline (adjacent)", action: () => resetToBaseline() },
       { label: "2. Switch to tight match", action: () => setState({ matchMode: "tight" }) },
     ],
   },
+  {
+    id: "artist-diversity",
+    label: "Artist diversity",
+    desc: "Neither Pink Floyd album is a Favourite artist, so \"Exclude Favourite artists\" doesn't stop both from showing up in the results. This is the separate toggle for that.",
+    steps: [
+      { label: "1. Reset to baseline", action: () => resetToBaseline() },
+      { label: "2. Turn on \"One album per artist in results\"", action: () => setState({ oneAlbumPerArtist: true }) },
+    ],
+  },
+  {
+    id: "tune-with-feedback",
+    label: "Tune with feedback",
+    desc: "Mark the #1 result as already heard and liked, and watch the Taste Profile and the rest of the list update around it. Then mark the new #1 as heard but not liked, and watch it get pushed down instead of just removed.",
+    steps: [
+      { label: "1. Reset to baseline", action: () => resetToBaseline() },
+      { label: "2. Mark the #1 result as heard + liked", action: () => likeTopResult() },
+      { label: "3. Mark the new #1 as heard, didn't like", action: () => dislikeTopResult() },
+    ],
+  },
 ];
+
+function resetToBaseline() {
+  state = { weightByRarity: false, excludeSameArtist: true, oneAlbumPerArtist: false, boostGenreTags: true, matchMode: "adjacent", liked: [], disliked: [] };
+  pendingHeardId = null;
+  render();
+}
+
+function likeTopResult() {
+  const { results } = Engine.rankCandidates(DATA.favourites, DATA.candidates, state, 10);
+  if (results[0]) markHeard(results[0].candidate.mbid, true);
+}
+
+function dislikeTopResult() {
+  const { results } = Engine.rankCandidates(DATA.favourites, DATA.candidates, state, 10);
+  if (results[0]) markHeard(results[0].candidate.mbid, false);
+}
 
 function setState(patch) {
   state = { ...state, ...patch };
