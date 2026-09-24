@@ -39,7 +39,7 @@ A label attached to an Album along one Axis, e.g. genre: shoegaze, mood: melanch
 _Avoid_: label (collides with record label), category, attribute, keyword
 
 **Axis**:
-A named dimension Tags live on. Known Axes: genre, sub-genre, mood, content, decade, region, participants. More may be added.
+A named dimension Tags live on. Known Axes: genre, sub-genre, mood, content, decade, region, record label, participants. Region is the Artist's home area (city where known, rolling up to country), not where the Album was recorded. Participants carry their role (producer, featured guest, engineer…). More may be added.
 _Avoid_: facet, dimension, category
 
 **Genre**:
@@ -73,7 +73,7 @@ One published review of one Album by one Publication, with its score normalised 
 _Avoid_: article, piece
 
 **Acclaimed**:
-An Album that has at least one Critic Score or Community Score. Only Acclaimed Albums appear on the dashboard and in the Candidate pool.
+An Album that has a Critic Score, or a Community Score built from at least a minimum number of Ratings (a site setting, around 10 to start). Only Acclaimed Albums appear on the dashboard and in the Candidate pool. The Community Score itself still shows at any count; the minimum only governs Acclaimed status.
 _Avoid_: scored, featured, rated, popular
 
 ## Members
@@ -95,7 +95,7 @@ One Member's written verdict on one Album, optionally alongside a Rating.
 _Avoid_: comment, write-up
 
 **Reaction**:
-A Member's thumbs-up or thumbs-down on a Recommendation. A Reaction is about the recommendation ("good call" / "not for me"), not a Rating of the Album.
+A Member's thumbs-up or thumbs-down on a Recommendation. Thumbs-up means "I listened, liked it, good recommendation": it Logs the Album and counts as liked in the Taste Profile. Thumbs-down means "bad recommendation", whether or not the Member listened: the Album is never recommended to them again, and nothing is Logged. Never a Rating; never part of the Community Score.
 _Avoid_: feedback, like, vote, upvote
 
 **Log**:
@@ -110,6 +110,10 @@ _Avoid_: collection, profile, history
 An Album a Member marks as defining their taste. Favourites are the primary input to the Taste Profile; a Member picks at least five.
 _Avoid_: liked, loved, top album, pick
 
+**Crate**:
+A Member's list of Albums they mean to listen to later (Letterboxd's watchlist). Not part of the Library, since nothing in it has been heard; says nothing about taste, but the Engine never recommends an Album already in it.
+_Avoid_: watchlist, queue, up next, saved, wishlist
+
 **Import**:
 A one-off ingestion of external listening data into a Member's Library, resolved from Tracks and Editions to Albums.
 _Avoid_: sync, connect, link, integration
@@ -121,23 +125,27 @@ _Avoid_: provider, platform, service
 ## Discovery
 
 **Taste Profile**:
-The derived description of one Member's taste, computed from their Favourites and Library and expressed in Tags and Signals. Recomputed whenever the Library changes.
+The derived description of one Member's taste: their Throughlines, each with a strength. Computed from their Favourites and Library (Favourites count most; Ratings count relative to the Member's own average, so a low one counts against; a thumbs-up Reaction and a saved Import count as liked; Albums only seen in listening history count as heard, not liked).
 _Avoid_: analysis, preferences, model, taste graph
 
+**Throughline**:
+One Tag, or a pair of Tags on different Axes, shared by Albums a Member likes (post-punk + Glasgow; produced by Madlib). Formed by at least two liked Albums or one Favourite. Its strength is how much the Member likes the Albums in it, scaled by how few Acclaimed Albums share it; pairs outrank single Tags. Every Recommendation comes from exactly one Throughline.
+_Avoid_: cluster, thread, group, segment
+
 **Candidate**:
-An Acclaimed Album not in the Member's Library that the Engine is considering.
+An Acclaimed Album the Engine is considering for a Member. Never an Album in the Member's Library or Crate, one they gave a thumbs-down, by an Artist of one of their Favourites, credited to Various Artists, or marked Compilation, Live, DJ-mix, Mixtape, or Remix; those stay searchable and rateable, just never recommended.
 _Avoid_: option, prospect
 
 **Recommendation**:
-A Candidate the Engine has ranked and presented to a Member, always accompanied by a Reason.
+A Candidate the Engine has ranked and presented to a Member, always accompanied by a Reason. A Member gets a short list of them each day (five), drawn one per Throughline; there is no endless feed.
 _Avoid_: suggestion, pick, rec, result
 
 **Reason**:
-The human-readable explanation attached to a Recommendation, naming the Signals and Favourites that produced it ("You rated three Glasgow post-punk albums 8+; this is the highest Critic Score among them you haven't logged").
+The human-readable explanation attached to a Recommendation, naming its Throughline, up to three of the Member's Albums behind it, and the Critic Score with how many Critic Reviews it rests on ("You rated three Glasgow post-punk Albums 4 stars or more; this is the best-reviewed one you haven't heard: Critic Score 88 from 6 reviews").
 _Avoid_: explanation, why, rationale
 
 **Engine**:
-The deterministic process that turns a Taste Profile and the Signals into a finite, ranked list of Recommendations. Same inputs always produce the same list.
+The deterministic process that turns a Taste Profile and the Signals into each day's finite list of Recommendations: it finds the Member's strongest Throughlines and picks the most acclaimed Candidate in each. Same inputs (Library, Reactions, Catalog, date) always produce the same list. New Signals join either as an Axis that forms Throughlines or as an input to ranking within one.
 _Avoid_: algorithm, model, recommender, AI, ML
 
 **Influence** (future):
