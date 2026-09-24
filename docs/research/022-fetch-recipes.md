@@ -3,7 +3,7 @@ ticket: 022
 title: Per-Publication fetch recipe for the fifteen Publications
 branch: research/022-fetch-recipes
 date: 2026-09-23
-status: findings (pending Sam's review)
+status: resolved 2026-09-23
 ---
 
 # Per-Publication fetch recipes (ticket 022)
