@@ -107,7 +107,7 @@ Everything a Member has logged, rated, reviewed, imported, or marked as a Favour
 _Avoid_: collection, profile, history
 
 **Favourite**:
-An Album a Member marks as defining their taste. Favourites are the primary input to the Taste Profile; a Member picks at least five.
+An Album a Member marks as defining their taste. Favourites are the primary input to the Taste Profile. A Member needs at least five before they get Recommendations, and may have any number. Only the Member sets a Favourite; an Import can suggest one, never set it.
 _Avoid_: liked, loved, top album, pick
 
 **Crate**:
@@ -115,11 +115,11 @@ A Member's list of Albums they mean to listen to later (Letterboxd's watchlist).
 _Avoid_: watchlist, queue, up next, saved, wishlist
 
 **Import**:
-A one-off ingestion of external listening data into a Member's Library, resolved from Tracks and Editions to Albums.
+A one-off ingestion of external listening data into a Member's Library, resolved from Tracks and Editions to Albums. Each resolved Album arrives as either saved (the Member kept the Album, or liked at least half its Tracks), which counts as liked, or played (at least half its Tracks appear in listening history), which counts only as heard. The Member reviews the result before it enters the Library. An Import only adds: it never changes or removes a Log, Rating, Review, or Favourite. A Member may Import any number of times, from any Source.
 _Avoid_: sync, connect, link, integration
 
 **Source**:
-Where an Import came from: Spotify, an uploaded file, or hand-picked. Apple Music is a future Source.
+Where an Import came from: a Spotify data export the Member uploads, or a Last.fm username. Picking Favourites by hand is not an Import. Apple Music is a future Source.
 _Avoid_: provider, platform, service
 
 ## Discovery
