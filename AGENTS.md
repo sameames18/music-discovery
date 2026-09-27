@@ -14,7 +14,7 @@ Findings from closed research tickets live in `docs/research/`; the ticket's res
 
 ## Work
 
-One ticket per session (research tickets excepted). Claim it before any work. Resolve it, record the resolution on the ticket, close it, append a one-line gist to the map's Decisions so far, then graduate any fog the answer sharpened into new tickets. Skill: `wayfinder`; ticket-type skills (`grilling` + `domain-modeling`, `prototype`, `research`) are named in the map's Notes.
+One ticket per session (research tickets excepted). Claim it before any work. Resolve it, record the resolution on the ticket, close it, append a one-line gist to the map's Decisions so far, then graduate any fog the answer sharpened into new tickets, and finally refresh the **Status** section of `README.md` (date, ticket count, settled, next up) so it matches the map. Skill: `wayfinder`; ticket-type skills (`grilling` + `domain-modeling`, `prototype`, `research`) are named in the map's Notes.
 
 Budget while charting is $0: research from public docs and free unauthenticated APIs; a paid service or account is a HITL task ticket for Sam, never a side effect.
 
